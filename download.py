@@ -1,6 +1,7 @@
 import os
 import subprocess 
 import shutil
+import argparse
 
 import webvtt
 import youtube_dl
@@ -18,20 +19,24 @@ ALIGNED_DIR = "aligned_textgrids"
 LANGUAGES = ["en"]
 
 PRON_DICT = "librispeech.txt"
-MFA_BIN = "/home/michael/Documents/Dialectology-Data/scripts/montreal-forced-aligner/bin"
+MFA_BIN = "/home/michael/Documents/montreal-forced-aligner/bin"
 
 YDL_OPTS = {
     'format': 'bestaudio/best',
     'writeautomaticsub': True,
-    'outtmpl': TEMP_DIR+'/%(id)s.%(ext)s',
+    'outtmpl': TEMP_DIR+'/%(uploader_id)s.%(id)s.%(ext)s',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'wav',
     }]
 }
 
-#youtube_videos = ['https://www.youtube.com/watch?v=2MsNyR-epBM']
-youtube_videos = ['https://www.youtube.com/watch?v=vblj3x1-KMI']
+
+parser = argparse.ArgumentParser(description="does stuff")
+parser.add_argument("videos", nargs="+",
+        help="YouTube videos to download")
+args = parser.parse_args()
+youtube_videos = args.videos
 
 with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
     ydl.download(youtube_videos)
@@ -49,7 +54,7 @@ for subtitle in filter(lambda x: x.endswith(".vtt"), os.listdir(TEMP_DIR)):
     if not os.path.isfile(os.path.join(TEMP_DIR, audio)):
         print("Audio file {} is missing".format(audio))
 
-    speaker = "RickRoderick"
+    speaker = subtitle.split(".")[0] 
     #Make sure the subtitles don't overlap as there are overlapping subtitles 
     #in youtube's auto-generated subs
     captions = webvtt.read(os.path.join(TEMP_DIR, subtitle)).captions
