@@ -3,6 +3,7 @@ import sys
 import subprocess 
 import shutil
 import argparse
+import csv
 
 import webvtt
 import youtube_dl
@@ -33,6 +34,8 @@ parser.add_argument("--utterance_output_dir", default="textgrids",
         help="The directory for the TextGrids with subtitles as utterances")
 parser.add_argument("--temp_dir", default="temp", 
         help="The directory to download the original subtitle files")
+parser.add_argument("--details_csv", default=None, 
+        help="A path for a CSV with video details")
 
 args = parser.parse_args()
 
@@ -99,6 +102,7 @@ for subtitle in subtitle_files:
     tg.write(os.path.join(TEXTGRID_DIR, subtitle.replace(file_ending, ".TextGrid")))
     shutil.move(os.path.join(TEMP_DIR, audio), \
                 os.path.join(TEXTGRID_DIR, audio))
+
 if not args.skip_mfa:
     subprocess.run([os.path.join(MFA_BIN, "mfa_align"), TEXTGRID_DIR, \
             args.mfa_dict, args.mfa_model, ALIGNED_DIR, "--verbose"])
@@ -108,3 +112,18 @@ if not args.skip_mfa:
         if not os.path.isfile(os.path.join(TEXTGRID_DIR, audio)):
             continue
         shutil.move(os.path.join(TEXTGRID_DIR, audio), os.path.join(ALIGNED_DIR, audio))
+
+if args.details_csv is not None:
+    corp_dir = TEXTGRID_DIR if args.skip_mfa else ALIGNED_DIR
+    with open(args.details_csv, "w") as f:
+        writer = csv.writer(f)
+        headers = ["id", "uploader_id", "title", "uploader", "url" "textgrid", "wav", "utterance_textgrid"]
+        writer.writerow(headers)
+        with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
+            for tg in filter(lambda x: x.endswith(".TextGrid"), os.listdir(corp_dir)):
+                vid_id = tg.split(".")[1]
+                d = ydl.extract_info(vid_id, download=False)
+                writer.writerow([d["id"], d["uploader_id"], d["title"], d["uploader"], d["webpage_url"],
+                        os.path.join(corp_dir, tg), \
+                        os.path.join(corp_dir, tg.replace(".TextGrid", ".wav")), \
+                        os.path.join(TEXTGRID_DIR, tg)])
