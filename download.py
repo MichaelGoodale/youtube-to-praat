@@ -16,38 +16,37 @@ def strip_bad_stuff(s):
 TEMP_DIR = "output"
 TEXTGRID_DIR = "textgrids"
 ALIGNED_DIR = "aligned_textgrids"
-LANGUAGES = ["en"]
 
 PRON_DICT = "librispeech.txt"
 MFA_BIN = "/home/michael/Documents/montreal-forced-aligner/bin"
+
+
+parser = argparse.ArgumentParser(description="does stuff")
+parser.add_argument("videos", nargs="+",
+        help="YouTube videos to download")
+parser.add_argument("--language", default="en",
+        help="Two letter language code of video subtitles")
+args = parser.parse_args()
+
+youtube_videos = args.videos
+language = str(args.language).lower()
 
 YDL_OPTS = {
     'format': 'bestaudio/best',
     'writeautomaticsub': True,
     'outtmpl': TEMP_DIR+'/%(uploader_id)s.%(id)s.%(ext)s',
+    'subtitleslangs':[language],
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'wav',
     }]
 }
 
-
-parser = argparse.ArgumentParser(description="does stuff")
-parser.add_argument("videos", nargs="+",
-        help="YouTube videos to download")
-args = parser.parse_args()
-youtube_videos = args.videos
-
 with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
     ydl.download(youtube_videos)
 
 for subtitle in filter(lambda x: x.endswith(".vtt"), os.listdir(TEMP_DIR)):
-    #Guess what language the file is
-    for l in LANGUAGES:
-        if subtitle.endswith(".{}.vtt".format(l)):
-            language = l
-            file_ending = ".{}.vtt".format(language)
-            break
+    file_ending = ".{}.vtt".format(language)
 
     #Check there's an audio file associated
     audio = subtitle.replace(file_ending, ".wav")
