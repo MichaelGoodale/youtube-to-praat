@@ -65,13 +65,14 @@ YDL_OPTS = {
 with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
     ydl.download(youtube_videos)
 
-for subtitle in filter(lambda x: x.endswith(".vtt"), os.listdir(TEMP_DIR)):
-    file_ending = ".{}.vtt".format(language)
-
+file_ending = ".{}.vtt".format(language)
+subtitle_files = list(filter(lambda x: x.endswith(file_ending), os.listdir(TEMP_DIR)))
+for subtitle in subtitle_files:
     #Check there's an audio file associated
     audio = subtitle.replace(file_ending, ".wav")
     if not os.path.isfile(os.path.join(TEMP_DIR, audio)):
         print("Audio file {} is missing".format(audio))
+        continue
 
     speaker = subtitle.split(".")[0] 
     #Make sure the subtitles don't overlap as there are overlapping subtitles 
@@ -91,7 +92,12 @@ for subtitle in filter(lambda x: x.endswith(".vtt"), os.listdir(TEMP_DIR)):
     tg.write(os.path.join(TEXTGRID_DIR, subtitle.replace(file_ending, ".TextGrid")))
     shutil.move(os.path.join(TEMP_DIR, audio), \
                 os.path.join(TEXTGRID_DIR, audio))
-    
 if not args.skip_mfa:
     subprocess.run([os.path.join(MFA_BIN, "mfa_align"), TEXTGRID_DIR, \
             args.mfa_dict, args.mfa_model, ALIGNED_DIR, "--verbose"])
+
+    for subtitle in subtitle_files:
+        audio = subtitle.replace(file_ending, ".wav")
+        if not os.path.isfile(os.path.join(TEXTGRID_DIR, audio)):
+            continue
+        shutil.move(os.path.join(TEXTGRID_DIR, audio), os.path.join(ALIGNED_DIR, audio))
