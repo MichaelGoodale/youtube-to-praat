@@ -17,7 +17,6 @@ TEMP_DIR = "output"
 TEXTGRID_DIR = "textgrids"
 ALIGNED_DIR = "aligned_textgrids"
 
-PRON_DICT = "librispeech.txt"
 MFA_BIN = "/home/michael/Documents/montreal-forced-aligner/bin"
 
 
@@ -26,6 +25,13 @@ parser.add_argument("videos", nargs="+",
         help="YouTube videos to download")
 parser.add_argument("--language", default="en",
         help="Two letter language code of video subtitles")
+
+parser.add_argument('-skip_mfa', action='store_true',
+        help="Skip forced alignment with MFA")
+parser.add_argument('--mfa_model', default='english',
+        help="Path to model for MFA, by default the pretrained English model")
+parser.add_argument('--mfa_dict', default='librispeech.txt',
+        help="Path to pronunciation dictionary")
 args = parser.parse_args()
 
 youtube_videos = args.videos
@@ -72,7 +78,6 @@ for subtitle in filter(lambda x: x.endswith(".vtt"), os.listdir(TEMP_DIR)):
     shutil.move(os.path.join(TEMP_DIR, audio), \
                 os.path.join(TEXTGRID_DIR, audio))
     
-
-subprocess.run([os.path.join(MFA_BIN, "mfa_align"), TEXTGRID_DIR, \
-        PRON_DICT, "english", ALIGNED_DIR, "--verbose"])
-
+if not args.skip_mfa:
+    subprocess.run([os.path.join(MFA_BIN, "mfa_align"), TEXTGRID_DIR, \
+            args.mfa_dict, args.mfa_model, ALIGNED_DIR, "--verbose"])
