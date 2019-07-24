@@ -8,12 +8,6 @@ import webvtt
 import youtube_dl
 import textgrid
 
-BAD_STUFF = ["\n"]
-def strip_bad_stuff(s):
-    for x in BAD_STUFF:
-        s = s.replace(x, '')
-    return s.upper()
-
 TEMP_DIR = "output"
 TEXTGRID_DIR = "textgrids"
 ALIGNED_DIR = "aligned_textgrids"
@@ -85,7 +79,7 @@ for subtitle in subtitle_files:
     tier = textgrid.IntervalTier(speaker)
     for cap_time, cap_string in zip(captions[::2], captions[1::2]):
         tier.add(cap_time.start_in_seconds, cap_time.end_in_seconds, \
-                strip_bad_stuff(cap_string.text))
+                cap_string.text.strip())
 
     tg = textgrid.TextGrid()
     tg.append(tier)
