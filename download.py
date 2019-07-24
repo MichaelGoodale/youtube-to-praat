@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess 
 import shutil
 import argparse
@@ -21,8 +22,10 @@ MFA_BIN = "/home/michael/Documents/montreal-forced-aligner/bin"
 
 
 parser = argparse.ArgumentParser(description="does stuff")
-parser.add_argument("videos", nargs="+",
+parser.add_argument("videos", nargs="*",
         help="YouTube videos to download")
+parser.add_argument("--file_path", default=None,
+        help="File with YouTube videos to download(separated by newlines)")
 parser.add_argument("--language", default="en",
         help="Two letter language code of video subtitles")
 
@@ -32,9 +35,20 @@ parser.add_argument('--mfa_model', default='english',
         help="Path to model for MFA, by default the pretrained English model")
 parser.add_argument('--mfa_dict', default='librispeech.txt',
         help="Path to pronunciation dictionary")
+
 args = parser.parse_args()
 
+if args.videos == [] and args.file_path is None:
+    print("At least one link to a video must be provided")
+    sys.exit(1)
+
 youtube_videos = args.videos
+
+if args.file_path is not None:
+    with open(args.file_path, "r") as f:
+        for l in f:
+            youtube_videos.append(l.strip())
+
 language = str(args.language).lower()
 
 YDL_OPTS = {
