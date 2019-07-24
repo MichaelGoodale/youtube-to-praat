@@ -8,9 +8,6 @@ import webvtt
 import youtube_dl
 import textgrid
 
-TEMP_DIR = "output"
-TEXTGRID_DIR = "textgrids"
-ALIGNED_DIR = "aligned_textgrids"
 
 MFA_BIN = "/home/michael/Documents/montreal-forced-aligner/bin"
 
@@ -30,7 +27,23 @@ parser.add_argument('--mfa_model', default='english',
 parser.add_argument('--mfa_dict', default='librispeech.txt',
         help="Path to pronunciation dictionary")
 
+parser.add_argument("--output_dir", default="aligned_textgrids", 
+        help="The directory for the final forced-aligned WAVs and TextGrids")
+parser.add_argument("--utterance_output_dir", default="textgrids", 
+        help="The directory for the TextGrids with subtitles as utterances")
+parser.add_argument("--temp_dir", default="temp", 
+        help="The directory to download the original subtitle files")
+
 args = parser.parse_args()
+
+ALIGNED_DIR = args.output_dir
+TEMP_DIR = args.temp_dir
+TEXTGRID_DIR = args.utterance_output_dir
+
+os.makedirs(TEMP_DIR, exist_ok=True)
+os.makedirs(TEXTGRID_DIR, exist_ok=True)
+if not args.skip_mfa:
+    os.makedirs(ALIGNED_DIR, exist_ok=True)
 
 if args.videos == [] and args.file_path is None:
     print("At least one link to a video must be provided")
