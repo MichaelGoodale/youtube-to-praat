@@ -53,4 +53,4 @@ If you intend to use this with the MFA step, make sure that you also change the 
 
 ## License
 
-This project is licensed under the GPL v3 License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GPL v3 License - see the [LICENSE](LICENSE) file for details
