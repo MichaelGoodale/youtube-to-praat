@@ -10,6 +10,7 @@ Currently it only uses the auto-generated subtitles on YouTube videos rather tha
 ### Installing
 
 In order to run the script you must first run `pip install -r requirements.txt` to install all necessary Python packages.
+You should also have a version of FFmpeg installed and available on the PATH as well.
 Additionally, if you intend to use the Montreal Forced Aligner with it, you must change the `MFA_BIN` variable in `download.py` to the path to the directory of `mfa_align` on your system.
 
 ### Using the script
