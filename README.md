@@ -15,7 +15,7 @@ Additionally, if you intend to use the Montreal Forced Aligner with it, you must
 
 ### Using the script
 
-The simplest use-case is to download one YouTube video and forced-align it.
+The simplest use-case is to download one YouTube video and forced-align it. This requires that you have set the `MFA_BIN` variable in the script.
 ```
 python3 download.py https://www.youtube.com/watch?v=OmIxrpI8-4M
 ```
